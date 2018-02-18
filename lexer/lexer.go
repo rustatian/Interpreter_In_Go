@@ -15,19 +15,6 @@ func New(input string) *Lexer {
 	return l
 }
 
-//give us next character and advance our position in the input string
-func (l *Lexer) readChar() {
-	//Have we reached the end of the input?
-	if l.readPosition >= len(l.input) {
-		l.ch = 0
-	} else {
-		l.ch = l.input[l.readPosition]
-	}
-
-	l.position = l.readPosition
-	l.readPosition += 1
-}
-
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
@@ -116,12 +103,27 @@ func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+//give us next character and advance our position in the input string
+func (l *Lexer) readChar() {
+	//Have we reached the end of the input?
+	if l.readPosition >= len(l.input) {
+		l.ch = 0
+	} else {
+		l.ch = l.input[l.readPosition]
+	}
+
+	l.position = l.readPosition
+	l.readPosition += 1
+}
+
 //To parse expressions contains of 2 symbols, such as ==, !=
-//If input contains more than 1 symbol we return 2
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
+		//If we reached end of input
 		return 0
 	} else {
+		//We just see the next char, if we in position (for example) 9, we return reading position 10 and we can see if
+		//there is combined type such as !=, ==
 		return l.input[l.readPosition]
 	}
 }
