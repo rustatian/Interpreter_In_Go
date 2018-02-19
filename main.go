@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	user, err := user.Current()
+	usr, err := user.Current()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Hello %s!", user.Username)
+	fmt.Printf("Hello %s!", usr.Username)
 	fmt.Printf("Feel free to type in commands\n")
 	repl.Start(os.Stdin, os.Stdout)
 }
