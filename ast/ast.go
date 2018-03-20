@@ -5,22 +5,22 @@ import (
 	"github.com/ValeryPiashchynski/InterpreterInGo/token"
 )
 
-//All Nodes connected to each other
+// All Nodes connected to each other
 type Node interface {
 	TokenLiteral() string
 	String() string
 }
 
 type Statement interface {
-	//To provide a token literal
+	// To provide a token literal
 	Node
-	//To parse statements
+	// To parse statements
 	statementNode()
 }
 
 type Expression interface {
 	Node
-	//To parse expressions
+	// To parse expressions
 	expressionNode()
 }
 
@@ -29,29 +29,29 @@ type Program struct {
 }
 
 type ReturnStatement struct {
-	Token       token.Token //the 'return' token
+	Token       token.Token // the 'return' token
 	ReturnValue Expression
 }
 
 type LetStatement struct {
 	Token token.Token
-	//To hold the identifier
+	// To hold the identifier
 	Name *Identifier
-	//For the expression that produces value
+	// For the expression that produces value
 	Value Expression
 }
 
 type Identifier struct {
-	Token token.Token //The token.IDENT token
+	Token token.Token // The token.IDENT token
 	Value string
 }
 
 type ExpressionStatement struct {
-	Token      token.Token //the first token of the expression
+	Token      token.Token // the first token of the expression
 	Expression Expression
 }
 
-//Expression statements
+// Expression statements
 func (es *ExpressionStatement) statementNode() {
 
 }
@@ -68,7 +68,7 @@ func (es *ExpressionStatement) String() string {
 	return ""
 }
 
-//Return statements
+// Return statements
 func (rs *ReturnStatement) statementNode() {
 
 }
@@ -90,7 +90,7 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
-//Let statements
+// Let statements
 func (ls *LetStatement) statementNode() {
 
 }
@@ -114,7 +114,7 @@ func (ls *LetStatement) String() string {
 	return out.String()
 }
 
-//Identifier
+// Identifier
 func (i *Identifier) expressionNode() {
 
 }
@@ -127,7 +127,7 @@ func (i *Identifier) String() string {
 	return i.Value
 }
 
-//The root node of every AST our parser produces
+// The root node of every AST our parser produces
 func (p *Program) TokenLiteral() string {
 	if len(p.Statements) > 0 {
 		return p.Statements[0].TokenLiteral()
@@ -136,7 +136,7 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
-//Create a buffer and write the return value of each statement to it, return buffer as s string
+// Create a buffer and write the return value of each statement to it, return buffer as s string
 func (p *Program) String() string {
 	var out bytes.Buffer
 
