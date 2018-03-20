@@ -7,6 +7,17 @@ import (
 	"github.com/ValeryPiashchynski/InterpreterInGo/token"
 )
 
+const (
+	_int = iota // takes the zero value
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // > or <
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X or !X
+	CALL        // myFunction(X)
+)
+
 type Parser struct {
 	// Pointer to the instance of the lexer on which we repeatedly call NextToken() to get the next token
 	l *lexer.Lexer
@@ -33,11 +44,17 @@ func New(l *lexer.Lexer) *Parser {
 		errors: []string{},
 	}
 
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	// Read two tokens, so curToken and peekToke are both set
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
@@ -85,6 +102,26 @@ func (p *Parser) parseStatement() ast.Statement {
 	default:
 		return nil
 	}
+}
+
+func (p *Parser) parseExpressionStatements() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
+		return nil
+	}
+	leftExp := prefix()
+	return leftExp
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
