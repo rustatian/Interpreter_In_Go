@@ -8,28 +8,44 @@ import (
 )
 
 type Parser struct {
-	//Pointer to the instance of the lexer on which we repeatedly call NextToken() to get the next token
+	// Pointer to the instance of the lexer on which we repeatedly call NextToken() to get the next token
 	l *lexer.Lexer
 
-	//We must get an errors, when returning nil
+	// We must get an errors, when returning nil
 	errors []string
 
-	//pointer to position
+	// pointer to position
 	curToken token.Token
-	//pointer to readPosition
+	// pointer to readPosition
 	peekToken token.Token
+
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
+
+type (
+	prefixParseFn func() ast.Expression
+	infixParseFn  func() ast.Expression
+)
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l,
 		errors: []string{},
 	}
 
-	//Read two tokens, so curToken and peekToke are both set
+	// Read two tokens, so curToken and peekToke are both set
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
 }
 
 func (p *Parser) Errors() []string {
@@ -75,7 +91,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 	p.nextToken()
 
-	//We are skipping all extension till we get semicolon
+	// We are skipping all extension till we get semicolon
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
@@ -101,7 +117,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	//TODO We're skipping the expression until we encounter a semicolon
+	// TODO We're skipping the expression until we encounter a semicolon
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
@@ -116,7 +132,7 @@ func (p *Parser) peekTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
 }
 
-//Add errors when our expectations about the next token are wrong
+// Add errors when our expectations about the next token are wrong
 func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
