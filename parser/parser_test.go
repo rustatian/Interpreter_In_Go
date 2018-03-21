@@ -117,6 +117,7 @@ func checkParseErrors(t *testing.T, p *Parser) {
 	t.FailNow()
 }
 
+// Test let statement
 func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
 	if s.TokenLiteral() != "let" {
 		t.Errorf("s.TokenLiteral not 'let'. got=%q", s.TokenLiteral())
