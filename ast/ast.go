@@ -51,6 +51,11 @@ type ExpressionStatement struct {
 	Expression Expression
 }
 
+type IntegerLiteral struct {
+	Token token.Token
+	Value int64
+}
+
 // Expression statements
 func (es *ExpressionStatement) statementNode() {
 
@@ -125,6 +130,19 @@ func (i *Identifier) TokenLiteral() string {
 
 func (i *Identifier) String() string {
 	return i.Value
+}
+
+// Integer Literal
+func (il *IntegerLiteral) expressionNode() {
+
+}
+
+func (il *IntegerLiteral) TokenLiteral() string {
+	return il.Token.Literal
+}
+
+func (il *IntegerLiteral) String() string {
+	return il.Token.Literal
 }
 
 // The root node of every AST our parser produces
