@@ -22,6 +22,19 @@ const (
 	CALL        // myFunction(X)
 )
 
+// Precedence table, associate token types with their precedences, that table can now tell us, that + (token.PLUS) and
+// - (token.MINUS) have the same precedence, which is lower than the precedence of * (token.ASTERISK) and / (token.SLASH)
+var precedences = map[token.TokenType]int{
+	token.EQ:       EQUALS,
+	token.NOT_EQ:   EQUALS,
+	token.LT:       LESSGREATER,
+	token.GT:       LESSGREATER,
+	token.PLUS:     SUM,
+	token.MINUS:    SUM,
+	token.SLASH:    PRODUCT,
+	token.ASTERISK: PRODUCT,
+}
+
 type Parser struct {
 	// Pointer to the instance of the lexer on which we repeatedly call NextToken() to get the next token
 	l *lexer.Lexer
@@ -40,7 +53,7 @@ type Parser struct {
 
 type (
 	prefixParseFn func() ast.Expression
-	infixParseFn  func() ast.Expression
+	infixParseFn  func(expression ast.Expression) ast.Expression
 )
 
 func New(l *lexer.Lexer) *Parser {
@@ -53,11 +66,53 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
+
+	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerInfix(token.PLUS, p.parseInfixExpression)
+	p.registerInfix(token.MINUS, p.parseInfixExpression)
+	p.registerInfix(token.SLASH, p.parseInfixExpression)
+	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfix(token.EQ, p.parseInfixExpression)
+	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
+	p.registerInfix(token.LT, p.parseInfixExpression)
+	p.registerInfix(token.GT, p.parseInfixExpression)
+
 	// Read two tokens, so curToken and peekToke are both set
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	expression := &ast.InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+
+	precedence := p.curPrecedence()
+	p.nextToken()
+	expression.Right = p.parseExpression(precedence)
+
+	return expression
+}
+
+// If we doesn't find precedence for peekToken it defaults to LOWEST
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+
+// If we doesn't find precedence for curToken it defaults to LOWEST
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+
+	return LOWEST
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
@@ -158,6 +213,20 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		return nil
 	}
 	leftExp := prefix()
+
+	// Tries to find infixParseFns for the next token, if find - call it, passing in the expression returned by a prefixParseFn as an argument
+	// and it does all this again and again until it encounters a token that has a higher precedence
+	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			return leftExp
+		}
+
+		p.nextToken()
+
+		leftExp = infix(leftExp)
+	}
+
 	return leftExp
 }
 
