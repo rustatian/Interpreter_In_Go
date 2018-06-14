@@ -9,11 +9,15 @@ import (
 	"github.com/ValeryPiashchynski/InterpreterInGo/token"
 )
 
+// Every node in AST has to implement the Node interface
 type Node interface {
+	// Will be used only for debugging or testing
 	TokenLiteral() string
+
 	String() string
 }
 
+// Statement
 type Statement interface {
 	// To provide a token literal
 	Node
@@ -28,6 +32,8 @@ type Expression interface {
 	expressionNode()
 }
 
+// Going to be root of every AST our parser produces. All of the statements contained in ```Program.Statements``` which just a slice of
+// AST nodes that implement the Statement interface
 type Program struct {
 	Statements []Statement
 }
@@ -38,6 +44,7 @@ type ReturnStatement struct {
 }
 
 type LetStatement struct {
+	// the token.LET token
 	Token token.Token
 	// To hold the identifier
 	Name *Identifier
@@ -76,6 +83,26 @@ type InfixExpression struct {
 type Boolean struct {
 	Token token.Token
 	Value bool
+}
+
+// The root node of every AST our parser produces
+func (p *Program) TokenLiteral() string {
+	if len(p.Statements) > 0 {
+		return p.Statements[0].TokenLiteral()
+	} else {
+		return ""
+	}
+}
+
+// Create a buffer and write the return value of each statement to it, return buffer as s string
+func (p *Program) String() string {
+	var out bytes.Buffer
+
+	for _, s := range p.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
 }
 
 // Expression statements
@@ -204,26 +231,6 @@ func (oe *InfixExpression) String() string {
 	out.WriteString(" " + oe.Operator + " ")
 	out.WriteString(oe.Right.String())
 	out.WriteString(")")
-
-	return out.String()
-}
-
-// The root node of every AST our parser produces
-func (p *Program) TokenLiteral() string {
-	if len(p.Statements) > 0 {
-		return p.Statements[0].TokenLiteral()
-	} else {
-		return ""
-	}
-}
-
-// Create a buffer and write the return value of each statement to it, return buffer as s string
-func (p *Program) String() string {
-	var out bytes.Buffer
-
-	for _, s := range p.Statements {
-		out.WriteString(s.String())
-	}
 
 	return out.String()
 }
