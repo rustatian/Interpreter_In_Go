@@ -298,6 +298,17 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 
 }
 
+func TestBooleanExpression(t *testing.T) {
+	input := "true;"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+
+	checkParseErrors(t, p)
+	print(program.String())
+}
+
 // Just check parse errors and show it
 func checkParseErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()

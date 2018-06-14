@@ -1,3 +1,7 @@
+// let <identifier> = <expression>
+// identifier = expression
+// All Nodes connected to each other
+
 package ast
 
 import (
@@ -5,7 +9,6 @@ import (
 	"github.com/ValeryPiashchynski/InterpreterInGo/token"
 )
 
-// All Nodes connected to each other
 type Node interface {
 	TokenLiteral() string
 	String() string
@@ -18,6 +21,7 @@ type Statement interface {
 	statementNode()
 }
 
+// Identifier
 type Expression interface {
 	Node
 	// To parse expressions
@@ -225,15 +229,14 @@ func (p *Program) String() string {
 }
 
 // Boolean expression
-func(b *Boolean) expressionNode() {
+func (b *Boolean) expressionNode() {
 
 }
 
-func(b *Boolean) TokenLiteral() string {
+func (b *Boolean) TokenLiteral() string {
 	return b.Token.Literal
 }
 
-func(b *Boolean) String() string {
+func (b *Boolean) String() string {
 	return b.Token.Literal
 }
-
