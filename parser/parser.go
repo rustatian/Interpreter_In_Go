@@ -51,6 +51,13 @@ type Parser struct {
 	infixParseFns  map[token.TokenType]infixParseFn
 }
 
+// A NumError records a failed conversion.
+type NumError struct {
+	Func string // the failing function (ParseBool, ParseInt, ParseUint, ParseFloat)
+	Num  string // the input
+	Err  error  // the reason the conversion failed (e.g. ErrRange, ErrSyntax, etc.)
+}
+
 type (
 	prefixParseFn func() ast.Expression
 	infixParseFn  func(expression ast.Expression) ast.Expression
@@ -82,6 +89,24 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) ParseProgram() *ast.Program {
+	program := &ast.Program{}
+	program.Statements = []ast.Statement{}
+
+	for p.curToken.Type != token.EOF {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			program.Statements = append(program.Statements, stmt)
+		}
+		p.nextToken()
+	}
+	return program
+}
+
+func (p *Parser) Errors() []string {
+	return p.errors
 }
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
@@ -144,10 +169,6 @@ func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 	p.infixParseFns[tokenType] = fn
 }
 
-func (p *Parser) Errors() []string {
-	return p.errors
-}
-
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken)
 	p.errors = append(p.errors, msg)
@@ -156,20 +177,6 @@ func (p *Parser) peekError(t token.TokenType) {
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.l.NextToken()
-}
-
-func (p *Parser) ParseProgram() *ast.Program {
-	program := &ast.Program{}
-	program.Statements = []ast.Statement{}
-
-	for p.curToken.Type != token.EOF {
-		stmt := p.parseStatement()
-		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
-		}
-		p.nextToken()
-	}
-	return program
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
@@ -289,11 +296,4 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.peekError(t)
 		return false
 	}
-}
-
-// A NumError records a failed conversion.
-type NumError struct {
-	Func string // the failing function (ParseBool, ParseInt, ParseUint, ParseFloat)
-	Num  string // the input
-	Err  error  // the reason the conversion failed (e.g. ErrRange, ErrSyntax, etc.)
 }
