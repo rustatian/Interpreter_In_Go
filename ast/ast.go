@@ -14,6 +14,7 @@ type Node interface {
 	// Will be used only for debugging or testing
 	TokenLiteral() string
 
+	// For debugging purposes to print
 	String() string
 }
 
