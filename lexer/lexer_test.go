@@ -7,17 +7,17 @@ import (
 
 func TestNextToken(t *testing.T) {
 	input := `let five = 5;
-let ten = 10;
+	let ten = 10;
+	
+	let add = fn(x, y) {
+	 x + y;
+	};
+	
+	let result = add(five, ten);
+	`
 
-let add = fn(x,y) {
-  x+y;
-};
-
-let result = add(five, ten);
-`
-
-	tests := []struct{
-		expectedType token.TokenType
+	tests := []struct {
+		expectedType    token.TokenType
 		expectedLiteral string
 	}{
 		{token.LET, "let"},
@@ -31,7 +31,6 @@ let result = add(five, ten);
 		{token.INT, "10"},
 		{token.SEMICOLON, ";"},
 		{token.LET, "let"},
-
 		{token.IDENT, "add"},
 		{token.ASSIGN, "="},
 		{token.FUNCTION, "fn"},
@@ -64,6 +63,9 @@ let result = add(five, ten);
 
 	for i, tt := range tests {
 		tok := l.NextToken()
+
+		//println(tok.Literal)
+		//println(tok.Type)
 
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests [%d] - tokenType wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
