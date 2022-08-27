@@ -3,8 +3,8 @@ package repl
 import (
 	"bufio"
 	"fmt"
-	"github.com/ValeryPiashchynski/InterpreterInGo/lexer"
-	"github.com/ValeryPiashchynski/InterpreterInGo/token"
+	"github.com/rustatian/InterpreterInGo/lexer"
+	"github.com/rustatian/InterpreterInGo/token"
 	"io"
 )
 

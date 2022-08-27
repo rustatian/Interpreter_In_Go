@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ValeryPiashchynski/InterpreterInGo/repl"
+	"github.com/rustatian/InterpreterInGo/repl"
 	"os"
 	"os/user"
 )

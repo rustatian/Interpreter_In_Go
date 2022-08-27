@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ValeryPiashchynski/InterpreterInGo/token"
+import "github.com/rustatian/InterpreterInGo/token"
 
 type Node interface {
 	TokenLiteral() string

@@ -1,3 +1,3 @@
-module github.com/ValeryPiashchynski/InterpreterInGo
+module github.com/rustatian/InterpreterInGo
 
-go 1.12
+go 1.19
